@@ -1,13 +1,13 @@
 from fastapi import FastAPI, HTTPException, status
-from typing import List
+from sqlmodel import create_engine
 
 app = FastAPI()
 
-todos = [
+todos = {
     "Work out",
     "Learn FastAPI",
     "Visit Egypt"
-]
+}
 
 
 @app.get("/todos", status_code=status.HTTP_200_OK)
