@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import List, Optional
 from sqlmodel import SQLModel, Field
 
 
 class TodoBase(SQLModel):
     title: str
     description: str
+    tags: Optional[List[str]] = Field(default=None)
 
 
 class TodoCreate(TodoBase):
@@ -14,6 +15,7 @@ class TodoCreate(TodoBase):
 class TodoUpdate(TodoBase):
     title: Optional[str] = None
     description: Optional[str] = None
+    tags: List[str]
 
 
 class Todo(TodoBase, table=True):
