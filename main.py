@@ -1,27 +1,41 @@
 from typing import List
-from unittest import result
 from fastapi import FastAPI, HTTPException, status, Depends
 from models import *
-from database import create_db_and_tables, engine, get_session
+from database import create_db_and_tables, get_session
 from sqlmodel import Session, select
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
 
 app = FastAPI()
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+
+
+@app.post('/token')
+async def token(form_data: OAuth2PasswordRequestForm = Depends()):
+    return {'access_token': form_data.username + 'token'}
+
+
+@app.get('/')
+async def index(token: str = Depends(oauth2_scheme)):
+    return {'token': token}
+
 
 @app.on_event("startup")
-def startup():
+async def startup():
     create_db_and_tables()
 
 
+@app.post('/token')
 @app.get("/todos", status_code=status.HTTP_200_OK, response_model=List[TodoOut])
-def get_todos(session: Session = Depends(get_session)):
+async def get_todos(session: Session = Depends(get_session)):
     statement = select(Todo)
     result = session.exec(statement)
     return result.all()
 
 
 @app.get("/todos/{id}", status_code=status.HTTP_200_OK, response_model=TodoOut)
-def get_todo(id: int, session: Session = Depends(get_session)):
+async def get_todo(id: int, session: Session = Depends(get_session)):
     try:
         result = session.get(Todo, id)
         return result
@@ -31,7 +45,7 @@ def get_todo(id: int, session: Session = Depends(get_session)):
 
 
 @app.post("/todos", status_code=status.HTTP_201_CREATED, response_model=TodoOut)
-def add_todo(todo: TodoCreate, session: Session = Depends(get_session)):
+async def add_todo(todo: TodoCreate, session: Session = Depends(get_session)):
     todo = Todo(**todo.dict())
     session.add(todo)
     session.commit()
@@ -41,7 +55,7 @@ def add_todo(todo: TodoCreate, session: Session = Depends(get_session)):
 
 
 @app.put("/todos/{id}", response_model=TodoOut)
-def update_todo(id: int, todo: TodoUpdate, session: Session = Depends(get_session)):
+async def update_todo(id: int, todo: TodoUpdate, session: Session = Depends(get_session)):
 
     result = session.query(Todo).get(id)
     if not result:
@@ -55,7 +69,7 @@ def update_todo(id: int, todo: TodoUpdate, session: Session = Depends(get_sessio
 
 
 @app.delete("/todos/{id}")
-def delete_todo(id: int, session: Session = Depends(get_session)):
+async def delete_todo(id: int, session: Session = Depends(get_session)):
 
     result = session.get(Todo, id)
     if not result:

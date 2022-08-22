@@ -5,7 +5,6 @@ from sqlmodel import SQLModel, Field
 class TodoBase(SQLModel):
     title: str
     description: str
-    tags: Optional[List[str]] = Field(default=None)
 
 
 class TodoCreate(TodoBase):
