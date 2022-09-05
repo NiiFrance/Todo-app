@@ -3,22 +3,19 @@ from fastapi import FastAPI, HTTPException, status, Depends
 from models import *
 from database import create_db_and_tables, get_session
 from sqlmodel import Session, select
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import APIKeyHeader
 
+API_TOKEN = "SECRET_API_TOKEN"
 
 app = FastAPI()
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
-
-
-@app.post('/token')
-async def token(form_data: OAuth2PasswordRequestForm = Depends()):
-    return {'access_token': form_data.username + 'token'}
+api_key_header = APIKeyHeader(name="Token")
 
 
-@app.get('/')
-async def index(token: str = Depends(oauth2_scheme)):
-    return {'token': token}
+@app.get("/protected-route")
+async def protected_route(token: str = Depends(api_key_header)):
+    if token != API_TOKEN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    return {"Hello": "World"}
 
 
 @app.on_event("startup")
@@ -26,7 +23,6 @@ async def startup():
     create_db_and_tables()
 
 
-@app.post('/token')
 @app.get("/todos", status_code=status.HTTP_200_OK, response_model=List[TodoOut])
 async def get_todos(session: Session = Depends(get_session)):
     statement = select(Todo)

@@ -1,5 +1,7 @@
+from enum import unique
 from typing import List, Optional
 from sqlmodel import SQLModel, Field
+from pydantic import EmailStr
 
 
 class TodoBase(SQLModel):
@@ -23,3 +25,19 @@ class Todo(TodoBase, table=True):
 
 class TodoOut(TodoBase):
     id: int
+
+
+class UserBase(SQLModel):
+    email: EmailStr = Field(index=True, nullable=False)
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class User(UserBase):
+    id: Optional[int] = Field(default=None, primary_key=True)
+
+
+class UserDB(User):
+    hashed_password: str
