@@ -2,14 +2,15 @@ name: Build and deploy Python app to Azure Web App
 
 env:
   AZURE_WEBAPP_NAME: Todo-app-Enoch  # set this to the name of your Azure Web App
-  PYTHON_VERSION: '3.9'              # set this to the Python version to use
+  PYTHON_VERSION: '3.8'              # set this to the Python version to use
 
 on:
   push:
     branches: [ "master" ]
   workflow_dispatch:
 
-
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -26,8 +27,8 @@ jobs:
 
       - name: Create and start virtual environment
         run: |
-          python -m venv env
-          source env/bin/activate
+          python -m venv venv
+          source venv/bin/activate
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -40,7 +41,7 @@ jobs:
           name: python-app
           path: |
             . 
-            !env/
+            !venv/
 
   deploy:
     permissions:
