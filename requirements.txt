@@ -2,3 +2,4 @@ fastapi
 sqlmodel
 alembic
 uvicorn
+pydantic[email]
